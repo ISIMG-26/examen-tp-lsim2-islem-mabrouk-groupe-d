@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cart Test</title>
+    <style>
+        body { font-family: Arial; margin: 20px; }
+        .test-section { border: 1px solid #ccc; padding: 15px; margin: 10px 0; }
+        button { padding: 10px 20px; background: #333; color: white; cursor: pointer; }
+        .output { background: #f0f0f0; padding: 10px; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Shopping Cart Test</h1>
+    
+    <div class="test-section">
+        <h2>Test 1: Simple AJAX Add to Cart</h2>
+        <p>Click button to add product ID 1, quantity 1</p>
+        <button onclick="testAddToCart()">Test Add to Cart</button>
+        <div id="output1" class="output"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test 2: Check Database</h2>
+        <button onclick="window.location.href='debug.php'">Go to Debug Page</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test 3: Form Test</h2>
+        <form class="variations-form shopify-cart" id="testForm">
+            <input type="hidden" name="product_id" value="1">
+            <label>Quantity: <input type="number" name="quantity" value="1" min="1"></label>
+            <button type="submit">Test Form Submit</button>
+        </form>
+        <div id="output3" class="output"></div>
+    </div>
+    
+    <script src="https://code.jquery.com/jquery-1.11.0.min.js"></script>
+    <script>
+        function testAddToCart() {
+            console.clear();
+            console.log("=== TEST: Direct AJAX Call ===");
+            
+            var output = $('#output1');
+            output.html('<p>Sending request...</p>');
+            
+            $.ajax({
+                url: 'add_to_cart.php',
+                type: 'POST',
+                data: {
+                    product_id: 1,
+                    quantity: 1
+                },
+                dataType: 'json',
+                timeout: 5000,
+                success: function(response) {
+                    console.log("SUCCESS Response:", response);
+                    output.html('<pre>' + JSON.stringify(response, null, 2) + '</pre>');
+                },
+                error: function(xhr, status, error) {
+                    console.error("ERROR Status:", status);
+                    console.error("ERROR Response:", xhr.responseText);
+                    console.error("ERROR:", error);
+                    
+                    var msg = 'Status: ' + status + '\n';
+                    msg += 'Error: ' + error + '\n';
+                    msg += 'Response: ' + xhr.responseText;
+                    
+                    output.html('<pre style="color:red;">' + msg + '</pre>');
+                }
+            });
+        }
+        
+        // Handle form submission
+        $('#testForm').on('submit', function(e) {
+            e.preventDefault();
+            console.clear();
+            console.log("=== TEST: Form Submit ===");
+            
+            var $form = $(this);
+            var product_id = $form.find('input[name="product_id"]').val();
+            var quantity = parseInt($form.find('input[name="quantity"]').val()) || 1;
+            
+            console.log("Form Data:", {product_id: product_id, quantity: quantity});
+            
+            var output = $('#output3');
+            output.html('<p>Sending form data...</p>');
+            
+            $.ajax({
+                url: 'add_to_cart.php',
+                type: 'POST',
+                data: {
+                    product_id: product_id,
+                    quantity: quantity
+                },
+                dataType: 'json',
+                timeout: 5000,
+                success: function(response) {
+                    console.log("SUCCESS:", response);
+                    output.html('<pre>' + JSON.stringify(response, null, 2) + '</pre>');
+                },
+                error: function(xhr, status, error) {
+                    console.error("ERROR:", {status: status, error: error, response: xhr.responseText});
+                    output.html('<pre style="color:red;">' + xhr.responseText + '</pre>');
+                }
+            });
+        });
+        
+        console.log("Test page loaded. Check console for details.");
+    </script>
+</body>
+</html>
